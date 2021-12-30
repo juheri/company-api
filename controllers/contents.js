@@ -32,7 +32,7 @@ exports.updateContent = async (req, res) => {
                 title, 
                 content
             }, { where: { id, user_id } })
-            tags && tags.length > 0 ? await tag_controller.updateTagsContent(id, tags) : null
+            tags && tags.length > 0 && await tag_controller.updateTagsContent(id, tags)
             res.status(200).json(success("OK", "success"), res.statusCode)
         } else {
             await image_helper.deleteImageContent(id)
@@ -42,7 +42,7 @@ exports.updateContent = async (req, res) => {
                 content,
                 image: req.file.filename
             }, { where: { id, user_id } })
-            tags && tags.length > 0 ? await tag_controller.updateTagsContent(id, tags) : null
+            tags && tags.length > 0 && await tag_controller.updateTagsContent(id, tags)
             res.status(200).json(success("OK", "success"), res.statusCode)
         }
     } catch (err) {
@@ -65,7 +65,6 @@ exports.deleteContent = async (req, res) => {
 
 exports.getContent = async (req, res) => {
     try {
-        let data_final = [];
         const result = await models.contents.findAll({
             attributes: { exclude: ["updated_at", "user_id"]},
             include: [
@@ -79,8 +78,8 @@ exports.getContent = async (req, res) => {
                 }
             ]
         });
-        result.map(data => {
-            data_final.push({
+        let data_final = result.map(data => {
+            return {
                 id: data.id,
                 title: data.title,
                 url: data.title.replace(/\s/g, '-'),
@@ -88,8 +87,8 @@ exports.getContent = async (req, res) => {
                 created_at: data.created_at,
                 tags: data.tags,
                 user: data.user
-            })
-        })
+            }
+        });
         res.status(200).json(success("OK", data_final), res.statusCode);
     } catch (err) {
         res.status(400).json(error("ops something went wrong", 400), res.statusCode);

@@ -7,23 +7,22 @@ exports.addLinks = async (req, res) => {
     try {
         const { company_id, data, name, link } = req.body
         if (data) {
-            let datas = []
-            for (let i = 0; i < data.length; i++) {
-                datas.push({
+            let datas = data.map((data) => {
+                return {
                     company_id,
-                    name: data[i].name,
-                    link: data[i].link
-                })
-            }
+                    name: data.name,
+                    link: data.link
+                }
+            });
             await models.links.bulkCreate(datas)
-            res.status(200).json(success("OK", "success", res.statusCode));
+            return res.status(200).json(success("OK", "success", res.statusCode));
         } else {
             await models.links.create({
                 company_id,
                 name,
                 link
-            })
-            res.status(200).json(success("OK", "success", res.statusCode));
+            });
+            return res.status(200).json(success("OK", "success", res.statusCode));
         }
     } catch (err) {
         res.status(400).json(error("ops something went wrong", 400), res.statusCode)
