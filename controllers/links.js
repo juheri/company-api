@@ -69,10 +69,10 @@ exports.getLinksDetail = async (req, res) => {
     }
 }
 
-exports.deleteLinks = async () => {
+exports.deleteLinks = async (req, res) => {
     try {
-        const id = req.body.id
-        await models.links.destroy({ where: {id} })
+        const id = req.body.id;
+        await models.links.destroy({ where: {id} });
         res.status(200).json(success("OK", "success", res.statusCode));
     } catch (err) {
         res.status(400).json(error("ops something went wrong", 400), res.statusCode)
