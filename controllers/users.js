@@ -25,7 +25,7 @@ exports.Register = async (req ,res) => {
                 phone: phone_number,
                 unique_url,
                 status: 'FREE',
-                verification: 0
+                verification: '0'
             });
             const token = await validation.generateToken({ email, company_id: result_company.id, phone_number })
             await models.users.create({
