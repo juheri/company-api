@@ -4,7 +4,6 @@ const models = require("../models/index");
 const fs = require("fs");
 const publicDir = require("path").join(__dirname, "../uploads/");
 const sharp = require('sharp');
-const e = require("express");
 
 
 exports.DeleteImageCompany = async (id, type) => {
@@ -43,13 +42,10 @@ exports.deleteImageError = async (image) => {
 exports.deleteImageContent = async (id) => {
     try {
         const result = await models.contents.findOne({ where: { id } })
-        if (result) {
-            fs.existsSync(publicDir + result.image) ? 
-                fs.unlinkSync(publicDir + result.image) : null
-            return true
-        } else {
-            return { error : true }
-        }
+        if (!result) return { error : true }
+        fs.existsSync(publicDir + result.image) ? 
+            fs.unlinkSync(publicDir + result.image) : null
+        return true
     } catch (err){
         return { error: true }
     }
@@ -128,12 +124,10 @@ exports.deleteCoverPictures = async (company_id, id) => {
         const result = await models.cover_pictures.findOne({
             where: { id, company_id }
         })
-        if(result){
-            fs.existsSync(publicDir + result.filename) ? 
-                fs.unlinkSync(publicDir + result.filename) : null
-            return { error: false }
-        }
-        return { error: true }
+        if(!result) return { error: true }
+        fs.existsSync(publicDir + result.filename) ? 
+            fs.unlinkSync(publicDir + result.filename) : null
+        return { error: false }
     } catch (err) {
         return { error: true }
     }
