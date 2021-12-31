@@ -2,17 +2,17 @@ const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
   const tags = sequelize.define('tags', {
     id: {
-      type: DataTypes.CHAR(25),
+      type: DataTypes.CHAR(40),
       allowNull: false,
       primaryKey: true,
       defaultValue: Sequelize.UUIDV4
     },
     product_id: {
-      type: DataTypes.CHAR(25),
+      type: DataTypes.CHAR(40),
       allowNull: true
     },
     content_id: {
-      type: DataTypes.CHAR(25),
+      type: DataTypes.CHAR(40),
       allowNull: true
     },
     tag: {

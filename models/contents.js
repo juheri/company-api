@@ -2,13 +2,13 @@ const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
   const contents = sequelize.define('contents', {
     id: {
-      type: DataTypes.CHAR(25),
+      type: DataTypes.CHAR(40),
       allowNull: false,
       primaryKey: true,
       defaultValue: Sequelize.UUIDV4
     },
     user_id: {
-      type: DataTypes.CHAR(25),
+      type: DataTypes.CHAR(40),
       allowNull: false
     },
     title: {
