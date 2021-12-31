@@ -17,32 +17,29 @@ exports.Register = async (req ,res) => {
         const phone_number = regex.regexPhone(phone);
         const result_validate = await validation.validate(phone_number, email, unique_url);
 
-        if (result_validate.error == false) {
-            const result_company = await models.companies.create({
-                name,
-                address,
-                email,
-                phone: phone_number,
-                unique_url,
-                status: 'FREE',
-                verification: '0'
-            });
-            const token = await validation.generateToken({ email, company_id: result_company.id, phone_number })
-            await models.users.create({
-                company_id: result_company.id,
-                username,
-                email,
-                phone: phone_number,
-                password: encrypted,
-                role: 'OWNER',
-                token: token.data ? token.data : null
-            });
-            res.status(200).json(success("OK", "success", res.statusCode));
-        } else {
-            res.status(400).json(error("your data has been used", 400), res.statusCode)
-        }
+        if (result_validate.error) return res.status(400).json(error("your data has been used", 400), res.statusCode);
+        const result_company = await models.companies.create({
+            name,
+            address,
+            email,
+            phone: phone_number,
+            unique_url,
+            status: 'FREE',
+            verification: '0'
+        });
+        const token = await validation.generateToken({ email, company_id: result_company.id, phone_number })
+        await models.users.create({
+            company_id: result_company.id,
+            username,
+            email,
+            phone: phone_number,
+            password: encrypted,
+            role: 'OWNER',
+            token: token.data ? token.data : null
+        });
+        res.status(200).json(success("OK", "success", res.statusCode));
     } catch (err) {
-        res.status(400).json(error("something went wrong", 400), res.statusCode)
+        return res.status(400).json(error("something went wrong", 400), res.statusCode)
     }
 }
 
@@ -50,29 +47,24 @@ exports.Login = async (req, res) => {
     try {
         const { password, key } = req.body
         const result = await models.users.findOne({ where: { [Op.or]: [{ email: key }, { phone: key }] } })
-        if (result != null) {
-            const db_password = result.password
-            const check_password = bcrypt.compareSync(password, db_password)
-            if (check_password) {
-                // const token = await validation.generateToken(
-                //     { email: result.email, company_id: result.company_id, phone_number: result.phone })
-                // await models.users.update({ token: token.data }, { where: { id: result.id } })
-                const datas = { 
-                    user_email: result.email, 
-                    company_id: result.company_id, 
-                    user_phone: result.phone,
-                    user_id: result.id
-                }
-                let encrypted = CryptoJS.AES.encrypt(JSON.stringify(datas), process.env.SECRET_KEY).toString()
-                res.status(200).json(success("OK", encrypted, res.statusCode))
-            } else {
-                res.status(400).json(error("your password is wrong", 400), res.statusCode)
-            }
-        } else {
-            res.status(400).json(error("data not found", 400), res.statusCode)
+        if (!result) return res.status(400).json(error("data not found", 400), res.statusCode);
+
+        const db_password = result.password;
+        const check_password = bcrypt.compareSync(password, db_password);
+        
+        if (!check_password) return res.status(400).json(error("your password is wrong", 400), res.statusCode);
+        // const token = await validation.generateToken(
+        //     { email: result.email, company_id: result.company_id, phone_number: result.phone })
+        // await models.users.update({ token: token.data }, { where: { id: result.id } })
+        const datas = { 
+            user_email: result.email, 
+            company_id: result.company_id, 
+            user_phone: result.phone,
+            user_id: result.id
         }
+        let encrypted = CryptoJS.AES.encrypt(JSON.stringify(datas), process.env.SECRET_KEY).toString()
+        res.status(200).json(success("OK", encrypted, res.statusCode));
     } catch (err) {
-        console.log(err)
         res.status(400).json(error("something went wrong", 400), res.statusCode)
     }
 }
@@ -80,7 +72,7 @@ exports.Login = async (req, res) => {
 exports.Description = async (req, res) => {
     try {
         const { company_id, description } = req.body
-        await models.companies.update({ description }, { where: { id: company_id } })
+        await models.companies.update({ description }, { where: { id: company_id } });
         res.status(200).json(success("OK", "success", res.statusCode));
     } catch (err) {
         res.status(400).json(error("failed update description", 400), res.statusCode)

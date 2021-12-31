@@ -21,9 +21,9 @@ exports.createProduct = async (req, res) => {
                 filename: data.filename,
             })
             await image_helper.resizeProduct(data.path);
-        })
+        });
         await models.product_images.bulkCreate(data_images);
-        tags && tags.length > 0 ? await tag_controller.createProduct(result.id, tags) : null
+        tags && tags.length > 0 && await tag_controller.createProduct(result.id, tags)
 
         res.status(200).json(success("OK", "success"), res.statusCode);
     } catch (err) {
@@ -55,7 +55,7 @@ exports.updateProduct = async (req, res) => {
         }, {
             where: { id: product_id, company_id }
         });
-        tags && tags.length > 0 ? await tag_controller.updateTagsProduct(product_id, tags) : null
+        tags && tags.length > 0 && await tag_controller.updateTagsProduct(product_id, tags)
         res.status(200).json(success("OK", "update success"), res.statusCode);
     } catch (err) {
         res.status(400).json(error("something went wrong", 400), res.statusCode);
@@ -65,11 +65,11 @@ exports.updateProduct = async (req, res) => {
 exports.deleteProduct = async (req, res) => {
     try {
         const { product_id, company_id } = req.body;
-        await models.products.destroy({ where: { id: product_id, company_id } })
-        await models.tags.destroy({ where: { product_id }})
-        const result = await models.product_images.findAll({ where: { product_id }})
-        result.map(async (data) => { await image_helper.deleteImageError(data.filename) })
-        await models.product_images.destroy({ where: { product_id }})
+        await models.products.destroy({ where: { id: product_id, company_id } });
+        await models.tags.destroy({ where: { product_id }});
+        const result = await models.product_images.findAll({ where: { product_id }});
+        result.map(async (data) => { await image_helper.deleteImageError(data.filename) });
+        await models.product_images.destroy({ where: { product_id }});
         res.status(200).json(success("OK", "delete success"), res.statusCode);
     } catch (err) {
         res.status(400).json(error("something went wrong", 400), res.statusCode);

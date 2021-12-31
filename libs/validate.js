@@ -21,7 +21,7 @@ exports.validate = async (phone_number, email, unique_url) => {
                 }
             }
         });
-        return validate_url == null && validate == null ? { error : false } : { error: true }
+        return !validate_url && !validate ? { error : false } : { error: true }
     } catch (err) {
         return { error: true }
     }
