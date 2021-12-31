@@ -2,14 +2,14 @@ const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
   const links = sequelize.define('links', {
     id: {
-      autoIncrement: true,
-      type: DataTypes.BIGINT,
+      type: DataTypes.CHAR(25),
       allowNull: false,
-      primaryKey: true
+      primaryKey: true,
+      defaultValue: Sequelize.UUIDV4
     },
     company_id: {
-      type: DataTypes.BIGINT,
-      allowNull: true
+      type: DataTypes.CHAR(25),
+      allowNull: false
     },
     name: {
       type: DataTypes.STRING(255),
@@ -44,9 +44,8 @@ module.exports = function(sequelize, DataTypes) {
       },
     ]
   });
-
   links.associate = (models) => {
     links.belongsTo(models.companies, { foreignKey: "company_id"})
   }
-  return links
+  return links;
 };

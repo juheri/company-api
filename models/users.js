@@ -2,14 +2,14 @@ const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
   const users = sequelize.define('users', {
     id: {
-      autoIncrement: true,
-      type: DataTypes.BIGINT,
+      type: DataTypes.CHAR(25),
       allowNull: false,
-      primaryKey: true
+      primaryKey: true,
+      defaultValue: Sequelize.UUIDV4
     },
     company_id: {
-      type: DataTypes.BIGINT,
-      allowNull: true
+      type: DataTypes.CHAR(25),
+      allowNull: false
     },
     username: {
       type: DataTypes.STRING(255),
@@ -28,7 +28,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     role: {
-      type: DataTypes.ENUM('OWNER','ADMIN','SUPER_ADMIN',''),
+      type: DataTypes.ENUM('OWNER','ADMIN'),
       allowNull: true
     },
     token: {
@@ -60,10 +60,9 @@ module.exports = function(sequelize, DataTypes) {
       },
     ]
   });
-
   users.associate = (models) => {
     users.belongsTo(models.companies, { foreignKey: "company_id"});
     users.hasMany(models.contents, { foreignKey: "user_id" })
   }
-  return users
+  return users;
 };

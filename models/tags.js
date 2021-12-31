@@ -2,17 +2,17 @@ const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
   const tags = sequelize.define('tags', {
     id: {
-      autoIncrement: true,
-      type: DataTypes.BIGINT,
+      type: DataTypes.CHAR(25),
       allowNull: false,
-      primaryKey: true
+      primaryKey: true,
+      defaultValue: Sequelize.UUIDV4
     },
     product_id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.CHAR(25),
       allowNull: true
     },
     content_id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.CHAR(25),
       allowNull: true
     },
     tag: {
@@ -44,10 +44,9 @@ module.exports = function(sequelize, DataTypes) {
       },
     ]
   });
-
   tags.associate = (models) => {
     tags.belongsTo(models.products, { foreignKey: "product_id" })
     tags.belongsTo(models.contents, { foreignKey: "content_id" })
   }
-  return tags
+  return tags;
 };

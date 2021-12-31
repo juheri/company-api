@@ -2,13 +2,13 @@ const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
   const contents = sequelize.define('contents', {
     id: {
-      autoIncrement: true,
-      type: DataTypes.BIGINT,
+      type: DataTypes.CHAR(25),
       allowNull: false,
-      primaryKey: true
+      primaryKey: true,
+      defaultValue: Sequelize.UUIDV4
     },
     user_id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.CHAR(25),
       allowNull: false
     },
     title: {
@@ -48,10 +48,9 @@ module.exports = function(sequelize, DataTypes) {
       },
     ]
   });
-
   contents.associate = (models) => {
     contents.hasMany(models.tags, { foreignKey: "content_id"});
     contents.belongsTo(models.users, { foreignKey: "user_id"})
   }
-  return contents
+  return contents;
 };
