@@ -11,6 +11,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.CHAR(40),
       allowNull: false
     },
+    company_id: {
+      type: DataTypes.CHAR(40),
+      allowNull: false
+    },
     title: {
       type: DataTypes.STRING(255),
       allowNull: false
@@ -50,7 +54,8 @@ module.exports = function(sequelize, DataTypes) {
   });
   contents.associate = (models) => {
     contents.hasMany(models.tags, { foreignKey: "content_id"});
-    contents.belongsTo(models.users, { foreignKey: "user_id"})
+    contents.belongsTo(models.users, { foreignKey: "user_id"});
+    contents.belongsTo(models.companies, { foreignKey: "user_id"});
   }
   return contents;
 };

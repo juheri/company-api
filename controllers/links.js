@@ -1,80 +1,94 @@
 "use strict";
 const models = require("../models/index");
 const { error, success } = require("./../config/response_api");
+const validation = require("./../helpers/validate");
 
 
 exports.addLinks = async (req, res) => {
     try {
-        const { company_id, data, name, link } = req.body
+        const { data, name, link } = req.body;
+        const token = req.headers.token;
+        const validate = await validation.verifyToken(token);
+        if(validate.error) return error(validate.error, 400, res);
         if (data) {
             let datas = data.map((data) => {
                 return {
-                    company_id,
+                    company_id: validate.id,
                     name: data.name,
                     link: data.link
                 }
             });
             await models.links.bulkCreate(datas)
-            return res.status(200).json(success("OK", "success", res.statusCode));
-        } else {
-            await models.links.create({
-                company_id,
-                name,
-                link
-            });
-            return res.status(200).json(success("OK", "success", res.statusCode));
+            return success("OK", "success", 200, res);
         }
+        await models.links.create({
+            company_id: validate.id,
+            name,
+            link
+        });
+        return success("OK", "success", 200, res);
     } catch (err) {
-        res.status(400).json(error("ops something went wrong", 400), res.statusCode)
+        return error("ops something went wrong", 400, res);
     }
 }
 
 exports.updateLinks = async (req, res) => {
     try {
-        const { id, name, link, company_id } = req.body
+        const { id, name, link } = req.body;
+        const token = req.headers.token;
+        const validate = await validation.verifyToken(token);
+        if(validate.error) return error(validate.error, 400, res);
+
         await models.links.update({
             name,
             link
         },{
-            where: { id, company_id }
+            where: { id, company_id: validate.id }
         })
-        res.status(200).json(success("OK", "update success", res.statusCode));
+        return success("OK", "success", 200, res);
     } catch (err) {
-        res.status(400).json(error("ops something went wrong", 400), res.statusCode)
+        return error("ops something went wrong", 400, res);
     }
 }
 
 exports.getLinks = async (req, res) => {
     try {
-        const company_id = req.params.company_id
+        const company_id = req.params.company_id;
         const result = await models.links.findAll({
-            attributes: { exclude: ['created_at', 'updated_at']},
+            attributes: { exclude: ['created_at', 'updated_at', "company_id"]},
             where: {
                 company_id
             }
         })
-        res.status(200).json(success("OK", result, res.statusCode));
+        return success("OK", result, 200, res);
     } catch (err) { 
-        res.status(400).json(error("ops something went wrong", 400), res.statusCode)
+        return error("ops something went wrong", 401, res);
     }
 }
 
 exports.getLinksDetail = async (req, res) => {
     try {
         const id = req.params.id
-        const result = await models.links.findOne({ where: { id } })
-        res.status(200).json(success("OK", result, res.statusCode));
+        const result = await models.links.findOne({ 
+            where: { id },
+            attributes: { exclude: ['created_at', 'updated_at', "company_id"]},
+        });
+        return success("OK", result, 200, res);
     } catch (err) {
-        res.status(400).json(error("ops something went wrong", 400), res.statusCode)
+        return error("ops something went wrong", 401, res);
     }
 }
 
 exports.deleteLinks = async (req, res) => {
     try {
         const id = req.body.id;
-        await models.links.destroy({ where: {id} });
-        res.status(200).json(success("OK", "success", res.statusCode));
+        const token = req.headers.token;
+        const validate = await validation.verifyToken(token);
+        if(validate.error) return error(validate.error, 400, res);
+
+        await models.links.destroy({ where: { id, company_id: validate.id } });
+        return success("OK", "success", 200, res);
     } catch (err) {
-        res.status(400).json(error("ops something went wrong", 400), res.statusCode)
+        return error("ops something went wrong", 401, res);
     }
 }

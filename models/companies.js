@@ -75,10 +75,11 @@ module.exports = function(sequelize, DataTypes) {
     ]
   });
   companies.associate = (models) => {
-    companies.hasMany(models.cover_pictures, { foreignKey: "company_id" })
-    companies.hasMany(models.products, { foreignKey: "company_id" })
-    companies.hasMany(models.links, { foreignKey: "company_id" })
-    companies.hasMany(models.users, { foreignKey: "company_id" })
+    companies.hasMany(models.cover_pictures, { foreignKey: "company_id" });
+    companies.hasMany(models.products, { foreignKey: "company_id" });
+    companies.hasMany(models.links, { foreignKey: "company_id" });
+    companies.hasMany(models.users, { foreignKey: "company_id" });
+    companies.hasMany(models.contents, { foreignKey: "company_id" });
   }
   return companies;
 };
