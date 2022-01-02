@@ -2,7 +2,7 @@
 const user = require("../controllers/users");
 const Multer = require("multer");
 const multer_config = require("../config/multer");
-const validate = require("../libs/validate");
+const validate = require("../helpers/validate");
 
 module.exports = (app) => {
     app.route("/register").post(user.Register);

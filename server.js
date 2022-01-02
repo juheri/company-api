@@ -29,11 +29,11 @@ app.use((req, res, next) => {
         req.headers.authorization.split(" ")[0] == "Bearer"
     ) {
         const setBearer = req.headers.authorization.split(" ")[1];
-        setBearer != bearerToken ?
-            res.status(500).json(error("Permission Denied", 500), res.statusCode) :
+        return setBearer != bearerToken ?
+            error("Permission Denied", 500, res) :
             next()
     } else {
-        res.status(500).json(error("Permission Denied", 500), res.statusCode)
+        return error("Permission Denied", 500, res)
     }
 });
 index(app);

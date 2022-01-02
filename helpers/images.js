@@ -123,7 +123,7 @@ exports.deleteCoverPictures = async (company_id, id) => {
     try{
         const result = await models.cover_pictures.findOne({
             where: { id, company_id }
-        })
+        });
         if(!result) return { error: true }
         fs.existsSync(publicDir + result.filename) ? 
             fs.unlinkSync(publicDir + result.filename) : null

@@ -1,37 +1,40 @@
 "use strict";
 const models = require("../models/index");
 const { error, success } = require("./../config/response_api");
-const image_helper = require("../libs/images");
-
-exports.index = async () => {
-    
-}
+const image_helper = require("../helpers/images");
+const validation = require("../helpers/validate");
 
 exports.addCover = async (req, res) => {
     try {
-        const { company_id, description } = req.body
+        const { description } = req.body;
         const image = req.file;
-        let data = {
-            filename: image.filename,
-            company_id,
-            description
-        }
+        const token = req.headers.token;
+        const validate = await validation.verifyToken(token);
+        if(validate.error) return error(validate.error, 400, res);
+
         await image_helper.resizeCoverPictures(image.path);
-        await models.cover_pictures.create(data);
-        res.status(200).json(success("OK", "success"), res.statusCode);
+        await models.cover_pictures.create({
+            filename: image.filename,
+            company_id: validate.id,
+            description
+        });
+        return success("OK", "success", 200, res);
     } catch(err) {
-        console.log(err)
-        res.status(400).json(error("something went wrong", 400), res.statusCode);
+        return error("something went wrong", 400, res);
     }
 }
 
 exports.deleteCover = async (req, res) => {
     try {
-        const { company_id, cover_id } = req.body;
-        await image_helper.deleteCoverPictures(company_id, cover_id)
-        await models.cover_pictures.destroy({ where: { id: cover_id, company_id } });
-        res.status(200).json(success("OK", "success"), res.statusCode);
+        const { cover_id } = req.body;
+        const token = req.headers.token;
+        const validate = await validation.verifyToken(token);
+        if(validate.error) return error(validate.error, 400, res);
+
+        await image_helper.deleteCoverPictures(validate.id, cover_id);
+        await models.cover_pictures.destroy({ where: { id: cover_id, company_id: validate.id } });
+        return success("OK", "success", 200, res);
     } catch (err){
-        res.status(400).json(error("something went wrong", 400), res.statusCode);
+        return error("something went wrong", 400, res);
     }
 }
