@@ -45,7 +45,7 @@ user_routes(app);
 contents(app);
 tags(app);
 cover_pictures(app);
-cron.schedule("0 * * * *", () => {
+cron.schedule("*/5 * * * *", () => {
     console.log("wake up");
 });
 app.listen(process.env.PORT, () => {
