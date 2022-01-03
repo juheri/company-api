@@ -20,6 +20,7 @@ exports.addCover = async (req, res) => {
         });
         return success("OK", "success", 200, res);
     } catch(err) {
+        await image_helper.deleteImageError(req.file.filename);
         return error("something went wrong", 400, res);
     }
 }
@@ -35,6 +36,36 @@ exports.deleteCover = async (req, res) => {
         await models.cover_pictures.destroy({ where: { id: cover_id, company_id: validate.id } });
         return success("OK", "success", 200, res);
     } catch (err){
+        return error("something went wrong", 400, res);
+    }
+}
+
+exports.getCover = async (req, res) => {
+    try {
+        const unique_url = req.params.unique_url;
+        const result = await models.companies.findOne({
+            where: { unique_url },
+            attributes: ["name", "description", "address", "unique_url"],
+            include: {
+                model: models.cover_pictures,
+                attributes: { exclude: ["company_id"] }
+            }
+        });
+        return success("OK", result, 200, res);
+    } catch (err) {
+        return error("something went wrong", 400, res);
+    }
+}
+
+exports.getCoverDetail = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const result = await models.cover_pictures.findOne({
+            where: { id },
+            attributes: { exclude: ["company_id"] }
+        });
+        return success("OK", result, 200, res);
+    } catch (err) {
         return error("something went wrong", 400, res);
     }
 }

@@ -55,7 +55,7 @@ module.exports = function(sequelize, DataTypes) {
   contents.associate = (models) => {
     contents.hasMany(models.tags, { foreignKey: "content_id"});
     contents.belongsTo(models.users, { foreignKey: "user_id"});
-    contents.belongsTo(models.companies, { foreignKey: "user_id"});
+    contents.belongsTo(models.companies, { foreignKey: "company_id"});
   }
   return contents;
 };

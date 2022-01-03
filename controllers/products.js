@@ -4,6 +4,7 @@ const { error, success } = require("./../config/response_api");
 const image_helper = require("../helpers/images");
 const tag_controller = require("../controllers/tags");
 const validation = require("../helpers/validate");
+const sequelize = require("sequelize");
 
 exports.createProduct = async (req, res) => {
     try {
@@ -95,5 +96,75 @@ exports.deleteProduct = async (req, res) => {
         return success("OK", "delete success", 200, res);
     } catch (err) {
         return error("something went wrong", 400, res);
+    }
+}
+
+exports.getProduct = async (req, res) => {
+    try {
+        const unique_url = req.params.unique_url;
+        const { page, per_page } = req.query;
+        const result = await models.companies.findOne({
+            where: { unique_url },
+            attributes: ["name", "description", "address", "unique_url",
+                [
+                    sequelize.literal(
+                        "(SELECT COUNT(products.id) FROM products WHERE products.company_id = companies.id)"
+                    ), "total"
+                ]
+            ],
+            include: {
+                model: models.products,
+                attributes: ["id","name", "description", "code", "created_at"],
+                include: {
+                    model: models.product_images,
+                    attributes: ["id", "filename"],
+                    required: true
+                },
+                offset: [ page ? parseInt((page - 1) * per_page) : 0],
+                limit: [ parseInt(per_page) ? parseInt(per_page) : 10 ],
+                order: [
+                    ["created_at", "DESC"]
+                ]
+            }
+        });
+        const data = {
+            name: result.dataValues.name,
+            description: result.dataValues.description,
+            address: result.dataValues.address,
+            total: result.dataValues.total,
+            products: result.dataValues.products
+        }
+        return success("OK", data, 200, res);
+    } catch (err) {
+        return error("can't get data", 400, res);
+    }
+}
+
+exports.getProductDetail = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const result = await models.products.findOne({
+            where: { id },
+            attributes: ["id","name", "description", "code", "created_at"],
+            include: [
+                {
+                    model: models.product_images,
+                    attributes: ["id", "filename"],
+                    required: true
+                },
+                {
+                    model: models.tags,
+                    attributes: { exclude: ["created_at", "updated_at", "product_id", "content_id"] },
+                },
+                {
+                    model: models.companies,
+                    attributes: ["name", "description", "address", "unique_url"],
+                    required: true
+                }
+            ]
+        });
+        return success("OK", result, 200, res);
+    } catch (err) {
+        return error("invalid params", 400, res);
     }
 }

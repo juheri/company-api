@@ -12,5 +12,7 @@ module.exports = (app) => {
         }).single("image"), 
         cover_pictures.addCover
     );
-    app.route("/cover-pictures").delete(cover_pictures.deleteCover);
+    app.route("/cover-pictures/destroy").delete(cover_pictures.deleteCover);
+    app.route("/cover-pictures/:unique_url").get(cover_pictures.getCover);
+    app.route("/cover-pictures/detail/:id").get(cover_pictures.getCoverDetail);
 }
