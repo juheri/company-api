@@ -49,8 +49,9 @@ module.exports = function(sequelize, DataTypes) {
     ]
   });
   products.associate = (models) => {
-    products.hasMany(models.product_images, { foreignKey: "product_id"})
-    products.belongsTo(models.companies, { foreignKey: "company_id"})
+    products.hasMany(models.product_images, { foreignKey: "product_id"});
+    products.hasMany(models.tags, { foreignKey: "product_id"});
+    products.belongsTo(models.companies, { foreignKey: "company_id"});
   }
   return products;
 };

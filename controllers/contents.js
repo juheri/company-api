@@ -92,7 +92,7 @@ exports.getContent = async (req, res) => {
         const { page, per_page } = req.query;
         const result = await models.companies.findOne({
             where: { unique_url },
-            attributes: ["name", "description", "address", "created_at",
+            attributes: ["name", "description", "address", "created_at", "unique_url",
                 [
                     sequelize.literal(
                         "(SELECT COUNT(contents.id) FROM contents WHERE contents.company_id = companies.id)"
@@ -147,13 +147,16 @@ exports.getContentDetail = async (req, res) => {
             include: [
                 {
                     model: models.tags,
-                    attributes: { exclude: ["created_at", "updated_at", "product_id", "content_id"] },
-                    required: true
+                    attributes: { exclude: ["created_at", "updated_at", "product_id", "content_id"] }
                 },
                 {
                     model: models.users,
                     attributes: ["username"],
                     required: true
+                },
+                {
+                    model: models.companies,
+                    attributes: ["name", "description", "address", "unique_url"]
                 }
             ]
         });
