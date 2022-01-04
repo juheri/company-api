@@ -4,7 +4,6 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const helmet = require('helmet');
 const cron = require('node-cron');
-const publicDir = require("path").join(__dirname, "/uploads");
 const { error } = require("./config/response_api");
 // routes
 const company_routes = require("./routes/companies");
@@ -18,7 +17,7 @@ const index = require("./routes/index");
 require("dotenv").config();
 
 app.use(helmet());
-app.use(express.static(publicDir));
+app.use("/images", express.static("uploads"));
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -34,7 +33,7 @@ app.use((req, res, next) => {
             error("Permission Denied", 500, res) :
             next()
     } else {
-        return error("Permission Denied", 500, res)
+        return error("Permission Denied", 500, res);
     }
 });
 index(app);
