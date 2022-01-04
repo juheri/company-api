@@ -175,39 +175,32 @@ exports.getProductCompany = async (req, res) => {
         const token = req.headers.token;
         const validate = await validation.verifyToken(token);
         if(validate.error) return error(validate.error, 400, res);
-
-        const result = await models.companies.findOne({
-            where: { id: validate.id },
-            attributes: ["name", "description", "address", "unique_url",
-                [
-                    sequelize.literal(
-                        "(SELECT COUNT(products.id) FROM products WHERE products.company_id = companies.id)"
-                    ), "total"
-                ]
-            ],
-            include: {
-                model: models.products,
-                attributes: ["id","name", "description", "code", "created_at"],
-                include: {
+        
+        const result = await models.products.findAndCountAll({
+            where: {
+                company_id: validate.id
+            },
+            attributes: ["id","name", "description", "code", "created_at"],
+            distinct: true,
+            include: [
+                {
                     model: models.product_images,
                     attributes: ["id", "filename"],
                     required: true
                 },
-                offset: [ page ? parseInt((page - 1) * per_page) : 0],
-                limit: [ parseInt(per_page) ? parseInt(per_page) : 10 ],
-                order: [
-                    ["created_at", "DESC"]
-                ]
-            }
+                {
+                    model: models.tags,
+                    attributes: ["id", "tag"],
+                    required: false
+                }
+            ],
+            offset: [ page ? parseInt((page - 1) * per_page) : 0],
+            limit: [ parseInt(per_page) ? parseInt(per_page) : 10 ],
+            order: [
+                ["created_at", "DESC"]
+            ]
         });
-        const data = {
-            name: result.dataValues.name,
-            description: result.dataValues.description,
-            address: result.dataValues.address,
-            total: result.dataValues.total,
-            products: result.dataValues.products
-        }
-        return success("OK", data, 200, res);
+        return success("OK", result, 200, res);
     } catch (err) {
         return error("something went wrong", 400, res);
     }
