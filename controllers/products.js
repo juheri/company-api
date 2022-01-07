@@ -46,12 +46,14 @@ exports.updateProduct = async (req, res) => {
         if(validate.error) return error(validate.error, 400, res);
 
         const images = req.files;
-        if (images && images.length > 0) {
-            await image_helper.deleteImageProduct(product_id);
+        if (
+            images && 
+            images.length > 0
+        ) {
             let data_images = [];
             images.map(async (data) => {
                 data_images.push({
-                    product_id: product_id,
+                    product_id,
                     filename: data.filename,
                 })
                 await image_helper.resizeProduct(data.path);
@@ -85,14 +87,13 @@ exports.deleteProduct = async (req, res) => {
         await models.products.destroy({ 
             where: { 
                 id: product_id, 
-                company_id: validate.id } 
+                company_id: validate.id 
+            } 
+        }).then(async() => {
+            await image_helper.deleteImageProduct(product_id).then(async() => {
+                await models.tags.destroy({ where: { product_id }});
             });
-        await models.tags.destroy({ where: { product_id }});
-
-        const result = await models.product_images.findAll({ where: { product_id }});
-        result.map(async (data) => { await image_helper.deleteImageError(data.filename) });
-
-        await models.product_images.destroy({ where: { product_id }});
+        });
         return success("OK", "delete success", 200, res);
     } catch (err) {
         return error("something went wrong", 400, res);
@@ -201,6 +202,28 @@ exports.getProductCompany = async (req, res) => {
             ]
         });
         return success("OK", result, 200, res);
+    } catch (err) {
+        return error("something went wrong", 400, res);
+    }
+}
+
+exports.deleteProductImage = async (req, res) => {
+    try {
+        const { id } = req.body;
+        const token = req.headers.token;
+        const validate = await validation.verifyToken(token);
+        if(validate.error) return error(validate.error, 400, res);
+
+        await models.product_images.findOne({
+            where: { id }
+        }).then(async(data) => {
+            await image_helper.deleteImageError(data.filename).then(async() => {
+                await models.product_images.destroy({
+                    where: { id }
+                });
+            });
+        });
+        return success("OK", "delete success", 200, res);
     } catch (err) {
         return error("something went wrong", 400, res);
     }

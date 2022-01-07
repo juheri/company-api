@@ -3,7 +3,6 @@ const app = express();
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const helmet = require('helmet');
-const cron = require('node-cron');
 const { error } = require("./config/response_api");
 // routes
 const company_routes = require("./routes/companies");
@@ -44,9 +43,7 @@ user_routes(app);
 contents(app);
 tags(app);
 cover_pictures(app);
-cron.schedule("*/5 * * * *", () => {
-    console.log("wake up");
-});
+
 app.listen(process.env.PORT, () => {
     console.log(`myproject API running on port ${process.env.PORT}`);
 });
