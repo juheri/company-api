@@ -12,6 +12,7 @@ module.exports = (app) => {
         }).array("image", 5),
         product.createProduct
     );
+    
     app.route("/product").put(
         Multer({ 
             storage: multer_config.diskStorage(), 
@@ -19,10 +20,12 @@ module.exports = (app) => {
         }).array("image", 5), 
         product.updateProduct
     );
+
     app.route("/product-destroy").delete(product.deleteProduct);
     app.route("/product-destroy/image").delete(product.deleteProductImage);
 
     app.route("/product/:unique_url").get(product.getProduct);
     app.route("/product-detail/:id").get(product.getProductDetail);
     app.route("/product-company").get(product.getProductCompany);
+    app.route("/product/search/:key").get(product.findProduct);
 }
