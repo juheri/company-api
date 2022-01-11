@@ -5,6 +5,7 @@ const image_helper = require("../helpers/images");
 const tag_controller = require("../controllers/tags");
 const validation = require("../helpers/validate");
 const sequelize = require("sequelize");
+const Op = sequelize.Op;
 
 exports.createProduct = async (req, res) => {
     try {
@@ -224,6 +225,37 @@ exports.deleteProductImage = async (req, res) => {
             });
         });
         return success("OK", "delete success", 200, res);
+    } catch (err) {
+        return error("something went wrong", 400, res);
+    }
+}
+
+exports.findProduct = async (req, res) => {
+    try {
+        const { key } = req.params;
+        const result = await models.products.findAll({
+            where: {
+                name: {
+                    [Op.like]: "%" + key + "%"
+                }
+            },
+            attributes: ["id","name", "description", "code"],
+            include: [
+                {
+                    model: models.companies,
+                    attributes: ["name", "unique_url"]
+                },
+                {
+                    model: models.tags,
+                    attributes: ["id", "tag"]
+                },
+                {
+                    model: models.product_images,
+                    attributes: ["id", "filename"]
+                }
+            ]
+        });
+        return success("OK", result, 200, res);
     } catch (err) {
         return error("something went wrong", 400, res);
     }

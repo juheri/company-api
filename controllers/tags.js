@@ -4,6 +4,7 @@ const models = require("../models/index");
 const { error, success } = require("./../config/response_api");
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
+const validation = require("../helpers/validate");
 
 exports.createTagsContent = async (datas, content_id) => {
     try {
@@ -57,7 +58,7 @@ exports.updateTagsProduct = async (product_id, datas) => {
         let tag_data = datas.map((data) => {
             return {
                 product_id,
-                tag: "#" + data.replace(/\s/g, '')
+                tag: data.startsWith("#") ? data.replace(/\s/g, '') : "#" + data.replace(/\s/g, '')
             }
         });
         await models.tags.bulkCreate(tag_data);
@@ -120,6 +121,22 @@ exports.findByTag = async (req, res) => {
             limit: [ parseInt(per_page) ? parseInt(per_page) : 10 ]
         });
         return success("OK", result, 200, res);
+    } catch (err) {
+        return error("something went wrong", 400, res);
+    }
+}
+
+exports.destroy = async (req, res) => {
+    try {
+        const token = req.headers.token;
+        const { id } = req.body;
+        const validate = await validation.verifyToken(token);
+        if(validate.error) return error(validate.error, 400, res);
+
+        await models.tags.destroy({
+            where: { id }
+        });
+        return success("OK", "success", 200, res);
     } catch (err) {
         return error("something went wrong", 400, res);
     }
