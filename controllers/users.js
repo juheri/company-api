@@ -99,14 +99,16 @@ exports.Logo = async (req, res) => {
         const validate = await validation.verifyToken(token);
         if(validate.error) return error(validate.error, 400, res);
 
-        await image_helper.DeleteImageCompany(validate.id, "logo");
-        await image_helper.resize(req.file.path);
-        await models.companies.update(
-            { logo: req.file.filename },
-            {
-                where: { id: validate.id }
-            }
-        );
+        await image_helper.DeleteImageCompany(validate.id, "logo").then(async() => {
+            await image_helper.resize(req.file.path).then(async () => {
+                await models.companies.update(
+                    { logo: req.file.filename },
+                    {
+                        where: { id: validate.id }
+                    }
+                );
+            });
+        });
         return success("OK", "success", 200, res);
     } catch (err) {
         await image_helper.deleteImageError(req.file.filename);
@@ -120,17 +122,76 @@ exports.Avatar = async (req, res) => {
         const validate = await validation.verifyToken(token);
         if(validate.error) return error(validate.error, 400, res);
 
-        await image_helper.DeleteImageCompany(validate.id, "avatar");
-        await image_helper.resize(req.file.path);
-        await models.companies.update(
-            { avatar: req.file.filename },
-            {
-                where: { id: validate.id },
-            }
-        );
+        await image_helper.DeleteImageCompany(validate.id, "avatar").then( async () => {
+            await image_helper.resize(req.file.path).then(async () => {
+                await models.companies.update(
+                    { avatar: req.file.filename },
+                    {
+                        where: { id: validate.id }
+                    }
+                );
+            });
+        });
         return success("OK","success", 200, res);
     } catch (err) {
         await image_helper.deleteImageError(req.file.filename);
         return error("failed", 400, res);
     }
 };
+
+exports.addUser = async (req, res) => {
+    try {
+        const token = req.headers.token;
+        let { email, phone, password, role, username } = req.body;
+        phone = regex.regexPhone(phone);
+        password = await secret.password(password, res);
+
+        const validate = await validation.verifyToken(token);
+        if(validate.error) return error(validate.error, 400, res);
+        
+        const result = await models.users.findOne({
+            where: { phone, email }
+        });
+        if (result) return error("your data has been used", 400, res);
+
+        const user_token = await validation.generateToken({
+            id: validate.id
+        });
+        await models.users.create({
+            company_id: validate.id,
+            username,
+            email,
+            phone,
+            password,
+            role,
+            token: user_token
+        });
+        return success("OK", "create data success", 200, res);
+    } catch (err){
+        return error("can't create data", 400, res);
+    }
+}
+
+exports.deleteUser = async (req, res) => {
+    try {
+        const token = req.headers.token;
+        const { id } = req.body;
+        const validate = await validation.verifyToken(token);
+        if(validate.error) return error(validate.error, 400, res);
+
+        const result = await models.users.findOne({
+            where: { id }
+        });
+        if(
+            !result || 
+            result.role === "OWNER"
+        ) return error("your data is wrong", 400, res);
+        
+        await models.users.destroy({
+            where: { id }
+        });
+        return success("OK", "success", 200, res);
+    } catch (err) {
+        return error("something went wrong", 400, res);
+    }
+}
