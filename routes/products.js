@@ -12,14 +12,15 @@ module.exports = (app) => {
         }).array("image", 5),
         product.createProduct
     );
-    
-    app.route("/product").put(
+    app.route("/product/image").post(
         Multer({ 
             storage: multer_config.diskStorage(), 
             fileFilter: validate.imageFilter 
-        }).array("image", 5), 
-        product.updateProduct
+        }).single("image"),
+        product.createImageProduct
     );
+
+    app.route("/product").put(product.updateProduct);
 
     app.route("/product-destroy").delete(product.deleteProduct);
     app.route("/product-destroy/image").delete(product.deleteProductImage);

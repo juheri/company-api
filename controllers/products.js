@@ -34,7 +34,32 @@ exports.createProduct = async (req, res) => {
 
         return success("OK", "success", 200, res);
     } catch (err) {
-        req.files.map(async (data) => { await image_helper.resizeProduct(data.path) });
+        req.files.map(async (data) => { await image_helper.deleteImageError(data.filename) });
+        return error("something went wrong", 400, res);
+    }
+}
+
+exports.createImageProduct = async (req, res) => {
+    try {
+        const token = req.headers.token;
+        const { product_id } = req.body;
+        const validate = await validation.verifyToken(token);
+        if(validate.error) return error(validate.error, 400, res);
+    
+        const result = await models.products.findOne({
+            where: { id: product_id }
+        });
+        if(!result) return error("your data is wrong", 400, res);
+
+        await image_helper.resizeProduct(req.file.path).then(async () => {
+            await models.product_images.create({
+                product_id,
+                filename: req.file.filename
+            });
+        });
+        return success("OK", "success", 200, res);
+    } catch (err) {
+        await image_helper.deleteImageError(req.file.filename);
         return error("something went wrong", 400, res);
     }
 }
@@ -46,21 +71,6 @@ exports.updateProduct = async (req, res) => {
         const validate = await validation.verifyToken(token);
         if(validate.error) return error(validate.error, 400, res);
 
-        const images = req.files;
-        if (
-            images && 
-            images.length > 0
-        ) {
-            let data_images = [];
-            images.map(async (data) => {
-                data_images.push({
-                    product_id,
-                    filename: data.filename,
-                })
-                await image_helper.resizeProduct(data.path);
-            });
-            await models.product_images.bulkCreate(data_images);
-        }
         await models.products.update({
             name,
             description,
