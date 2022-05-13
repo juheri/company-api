@@ -50,6 +50,7 @@ exports.getDetailCompanies = async (req, res) => {
                 }
             ]
         });
+        if(!result) return success("data not found", {}, 200, res) 
         const data = {
             name: result.dataValues.name,
             logo: result.dataValues.logo,

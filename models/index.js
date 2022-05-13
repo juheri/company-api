@@ -17,7 +17,14 @@ let sequelize = new Sequelize(
     database: process.env.DATABASE,
     host: process.env.HOST,
     dialect: process.env.DIALECT,
+    ssl: true,
     // logging: true,
+    dialectOptions: {
+      ssl: {
+        rejectUnauthorized: true,
+        require: true,
+      },
+    },
   }
 );
 
