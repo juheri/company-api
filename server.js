@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const helmet = require('helmet');
+const helmet = require("helmet");
 const { error } = require("./config/response_api");
 // routes
 const company_routes = require("./routes/companies");
@@ -22,18 +22,18 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 app.use((req, res, next) => {
-    const bearerToken = process.env.TOKEN;
-    if (
-        req.headers.authorization &&
-        req.headers.authorization.split(" ")[0] == "Bearer"
-    ) {
-        const setBearer = req.headers.authorization.split(" ")[1];
-        return setBearer != bearerToken ?
-            error("Permission Denied", 500, res) :
-            next()
-    } else {
-        return error("Permission Denied", 500, res);
-    }
+  const bearerToken = process.env.TOKEN;
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.split(" ")[0] == "Bearer"
+  ) {
+    const setBearer = req.headers.authorization.split(" ")[1];
+    return setBearer != bearerToken
+      ? error("Permission Denied", 500, res)
+      : next();
+  } else {
+    return error("Permission Denied", 500, res);
+  }
 });
 index(app);
 company_routes(app);
@@ -45,5 +45,5 @@ tags(app);
 cover_pictures(app);
 
 app.listen(process.env.PORT, () => {
-    console.log(`myproject API running on port ${process.env.PORT}`);
+  console.log(`myproject API running on port ${process.env.PORT}`);
 });
